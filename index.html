@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Chatbot</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #0b1220;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #chat {
+      width: 420px;
+      height: 650px;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    /* Header */
+    #header {
+      padding: 15px;
+      background: #111827;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-weight: bold;
+      color: #e5e7eb;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* Messages */
+    #messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.4;
+      animation: fadeIn 0.2s ease;
+      word-wrap: break-word;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #1f2937;
+      color: #e5e7eb;
+      border-bottom-left-radius: 4px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Input area */
+    #inputArea {
+      display: flex;
+      padding: 12px;
+      background: #111827;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      background: #1f2937;
+      color: white;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #9ca3af;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: none;
+      background: #22c55e;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    /* Scrollbar */
+    #messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #messages::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 10px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div id="chat">
+  <div id="header">AI Assistant</div>
+
+  <div id="messages"></div>
+
+  <div id="inputArea">
+    <input id="input" placeholder="Type a message..." onkeydown="if(event.key==='Enter') send()" />
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script>
+async function send() {
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  const typing = addMessage("Typing...", "bot");
+
+  const res = await fetch("http://127.0.0.1:8000/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({message: text})
+  });
+
+  const data = await res.json();
+
+  typing.remove();
+  addMessage(data.response, "bot");
+}
+
+function addMessage(text, type) {
+  const msgDiv = document.createElement("div");
+  msgDiv.className = "msg " + type;
+  msgDiv.innerText = text;
+
+  const messages = document.getElementById("messages");
+  messages.appendChild(msgDiv);
+
+  messages.scrollTop = messages.scrollHeight;
+
+  return msgDiv;
+}
+</script>
+
+</body>
+</html>
